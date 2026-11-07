@@ -7,6 +7,8 @@ contextBridge.exposeInMainWorld('vrlink', {
   home: () => ipcRenderer.invoke('browser:home'),
   copy: (url) => ipcRenderer.invoke('browser:copy-media', url),
   prepare: (url) => ipcRenderer.invoke('browser:prepare-media', url),
+  shareLocalVideo: () => ipcRenderer.invoke('browser:share-local-video'),
+  stopLocalVideo: () => ipcRenderer.invoke('browser:stop-local-video'),
   scan: () => ipcRenderer.invoke('browser:scan'),
   panel: (visible) => ipcRenderer.invoke('browser:panel', visible),
   onState: (callback) => ipcRenderer.on('browser:state', (_event, state) => callback(state)),
