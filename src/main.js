@@ -1,7 +1,9 @@
-const { app, BrowserWindow, BrowserView, ipcMain, session, clipboard, Menu } = require('electron');
+const { app, BrowserWindow, BrowserView, ipcMain, session, clipboard, Menu, dialog } = require('electron');
 const path = require('path');
 const { shouldBlock, directMediaUrl } = require('./rules');
 const { createRelay } = require('./relay');
+const { createLocalVideoServer } = require('./local-video-server');
+const localVideoServer = createLocalVideoServer();
 
 const HOME = 'https://www.google.com/webhp?hl=pt-BR';
 const START_URL = process.argv.slice(1).find(isSafeUrl) || HOME;
@@ -183,6 +185,7 @@ if (hasSingleInstance) app.whenReady().then(() => {
   createWindow();
   app.on('activate', () => { if (BrowserWindow.getAllWindows().length === 0) createWindow(); });
 });
+app.on('before-quit', () => { localVideoServer.revokeAll(); localVideoServer.close().catch(console.error); });
 app.on('window-all-closed', () => { if (process.platform !== 'darwin') app.quit(); });
 
 ipcMain.handle('browser:navigate', (_event, value) => navigate(value));
@@ -217,3 +220,16 @@ ipcMain.handle('browser:panel', (_event, visible) => {
 ipcMain.on('media-found', (event, payload) => {
   if (pageView && event.sender === pageView.webContents) receiveMedia(payload);
 });
+
+// Local-file mode does not expose browsing credentials or download protected streams.
+ipcMain.handle('browser:share-local-video', async () => {
+  const choice = await dialog.showOpenDialog(mainWindow, { title: 'Selecione um MP4 autorizado', properties: ['openFile'], filters: [{ name: 'Vídeos MP4', extensions: ['mp4'] }] });
+  if (choice.canceled || !choice.filePaths.length) return { ok: false, canceled: true };
+  try {
+    await localVideoServer.listen();
+    const url = localVideoServer.add(choice.filePaths[0]);
+    clipboard.writeText(url);
+    return { ok: true, url, localOnly: true };
+  } catch (error) { return { ok: false, error: error.message }; }
+});
+ipcMain.handle('browser:stop-local-video', () => { localVideoServer.revokeAll(); return { ok: true }; });
