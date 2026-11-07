@@ -79,7 +79,8 @@ function publishState() {
 }
 
 function receiveMedia(payload) {
-  const unique = [...new Set((payload || []).filter(directMediaUrl))].slice(0, 12);
+  const incoming = (payload || []).filter((item) => directMediaUrl(typeof item === 'string' ? item : item.url, typeof item === 'string' ? '' : item.contentType));
+  const unique = [...new Set([...latestMedia, ...incoming.map((item) => typeof item === 'string' ? item : item.url)])].slice(0, 30);
   if (JSON.stringify(unique) === JSON.stringify(latestMedia)) return;
   latestMedia = unique;
   publishState();
@@ -89,6 +90,12 @@ function installProtection() {
   const ses = session.defaultSession;
   ses.webRequest.onBeforeRequest((details, callback) => {
     if (shouldBlock(details.url)) { blocked += 1; publishState(); return callback({ cancel: true }); }
+    callback({});
+  });
+  ses.webRequest.onHeadersReceived((details, callback) => {
+    const headers = details.responseHeaders || {};
+    const contentType = (headers['content-type'] || headers['Content-Type'] || [''])[0];
+    if (directMediaUrl(details.url, contentType)) receiveMedia([{ url: details.url, contentType }]);
     callback({});
   });
   ses.setPermissionRequestHandler((_webContents, permission, callback) => {
@@ -127,6 +134,10 @@ ipcMain.handle('browser:reload', () => pageView.webContents.reload());
 ipcMain.handle('browser:home', () => navigate(HOME));
 ipcMain.handle('browser:copy-media', (_event, value) => { if (directMediaUrl(value)) clipboard.writeText(value); });
 ipcMain.handle('browser:open-vrchat', (_event, value) => { if (directMediaUrl(value)) shell.openExternal(`vrchat://launch?ref=vrlink&url=${encodeURIComponent(value)}`); });
+ipcMain.handle('browser:scan', () => {
+  if (pageView) pageView.webContents.send('collect-media');
+  return latestMedia;
+});
 ipcMain.on('media-found', (event, payload) => {
   if (pageView && event.sender === pageView.webContents) receiveMedia(payload);
 });

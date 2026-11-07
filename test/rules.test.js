@@ -9,6 +9,8 @@ test('blocks known ad and tracking hosts', () => {
 test('only accepts direct HTTP media URLs', () => {
   assert.equal(directMediaUrl('https://media.example/video.mp4?token=ok'), true);
   assert.equal(directMediaUrl('https://media.example/video.m3u8'), true);
+  assert.equal(directMediaUrl('https://media.example/stream?id=42', 'video/mp4'), true);
+  assert.equal(directMediaUrl('https://media.example/manifest', 'application/dash+xml'), true);
   assert.equal(directMediaUrl('blob:https://site.example/abc'), false);
   assert.equal(directMediaUrl('https://site.example/watch?id=1'), false);
 });

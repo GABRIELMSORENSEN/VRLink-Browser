@@ -7,6 +7,7 @@ contextBridge.exposeInMainWorld('vrlink', {
   home: () => ipcRenderer.invoke('browser:home'),
   copy: (url) => ipcRenderer.invoke('browser:copy-media', url),
   openVRChat: (url) => ipcRenderer.invoke('browser:open-vrchat', url),
+  scan: () => ipcRenderer.invoke('browser:scan'),
   onState: (callback) => ipcRenderer.on('browser:state', (_event, state) => callback(state)),
   onError: (callback) => ipcRenderer.on('browser:error', (_event, state) => callback(state))
 });
