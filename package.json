@@ -1,6 +1,6 @@
 {
   "name": "vrlink-browser",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Navegador privado com envio de mídia direta para players de vídeo do VRChat.",
   "main": "src/main.js",
   "author": "GABRIELMSORENSEN",

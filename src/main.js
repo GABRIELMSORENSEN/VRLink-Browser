@@ -7,6 +7,8 @@ let mainWindow;
 let pageView;
 let blocked = 0;
 let latestMedia = [];
+let panelOpen = false;
+const PANEL_WIDTH = 410;
 
 const hasSingleInstance = app.requestSingleInstanceLock();
 if (!hasSingleInstance) app.quit();
@@ -46,8 +48,8 @@ function createPageView() {
 function resizeView() {
   if (!mainWindow || !pageView) return;
   const [width, height] = mainWindow.getContentSize();
-  pageView.setBounds({ x: 0, y: 62, width, height: Math.max(0, height - 62) });
-  pageView.setAutoResize({ width: true, height: true });
+  pageView.setBounds({ x: 0, y: 62, width: Math.max(320, width - (panelOpen ? PANEL_WIDTH : 0)), height: Math.max(0, height - 62) });
+  pageView.setAutoResize({ height: true });
 }
 
 function normalize(value) {
@@ -90,6 +92,7 @@ function installProtection() {
   const ses = session.defaultSession;
   ses.webRequest.onBeforeRequest((details, callback) => {
     if (shouldBlock(details.url)) { blocked += 1; publishState(); return callback({ cancel: true }); }
+    if (details.resourceType === 'media') receiveMedia([{ url: details.url, contentType: 'video/detected' }]);
     callback({});
   });
   ses.webRequest.onHeadersReceived((details, callback) => {
@@ -137,6 +140,10 @@ ipcMain.handle('browser:open-vrchat', (_event, value) => { if (directMediaUrl(va
 ipcMain.handle('browser:scan', () => {
   if (pageView) pageView.webContents.send('collect-media');
   return latestMedia;
+});
+ipcMain.handle('browser:panel', (_event, visible) => {
+  panelOpen = Boolean(visible);
+  resizeView();
 });
 ipcMain.on('media-found', (event, payload) => {
   if (pageView && event.sender === pageView.webContents) receiveMedia(payload);
