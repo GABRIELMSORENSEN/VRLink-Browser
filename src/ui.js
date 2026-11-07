@@ -9,3 +9,6 @@ function setPanel(show){panel.hidden=!show;menu.setAttribute('aria-expanded',Str
 $('scan').onclick=async()=>{await window.vrlink.scan();toast('Verificação acionada. Reproduza o vídeo se ainda não aparecer.');};
 window.vrlink.onState((state)=>{url.value=state.url||url.value;document.title=state.title?`${state.title} — VRLink`:'VRLink Browser';$('blocked').textContent=state.blocked; $('back').disabled=!state.canGoBack;$('forward').disabled=!state.canGoForward;render(state.media||[]);});
 window.vrlink.onError(({description})=>toast(`Não foi possível abrir: ${description}`));
+
+$('share-local').onclick = async () => { const result = await window.vrlink.shareLocalVideo(); if (result.ok) toast('MP4 local ativo. O link copiado só funciona neste PC; HTTPS público ainda não foi configurado.'); else if (!result.canceled) toast(result.error || 'Não foi possível selecionar o MP4.'); };
+$('stop-local').onclick = async () => { await window.vrlink.stopLocalVideo(); toast('Links locais desativados.'); };
