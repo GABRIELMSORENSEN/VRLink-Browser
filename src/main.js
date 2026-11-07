@@ -8,6 +8,14 @@ let pageView;
 let blocked = 0;
 let latestMedia = [];
 
+const hasSingleInstance = app.requestSingleInstanceLock();
+if (!hasSingleInstance) app.quit();
+app.on('second-instance', () => {
+  if (!mainWindow) return;
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  mainWindow.focus();
+});
+
 function isSafeUrl(value) {
   return /^https?:\/\//i.test(value || '');
 }
@@ -104,7 +112,7 @@ function createWindow() {
   mainWindow.webContents.once('did-finish-load', () => { createPageView(); navigate(HOME); });
 }
 
-app.whenReady().then(() => {
+if (hasSingleInstance) app.whenReady().then(() => {
   installProtection();
   Menu.setApplicationMenu(null);
   createWindow();

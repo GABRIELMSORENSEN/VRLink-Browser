@@ -1,6 +1,6 @@
 {
   "name": "vrlink-browser",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Navegador privado com envio de mídia direta para players de vídeo do VRChat.",
   "main": "src/main.js",
   "author": "GABRIELMSORENSEN",
@@ -8,14 +8,14 @@
   "scripts": {
     "start": "electron .",
     "test": "node --test",
-    "dist:win": "electron-builder --win portable"
+    "dist:win": "electron-builder --win zip"
   },
   "build": {
     "appId": "com.g4t0xx.vrlink",
     "productName": "VRLink Browser",
     "artifactName": "VRLink-Browser-${version}-Windows.${ext}",
     "files": ["src/**/*", "README.md", "LICENSE"],
-    "win": { "target": ["portable"] }
+    "win": { "target": ["zip"] }
   },
   "devDependencies": {
     "electron": "^37.2.6",

@@ -31,7 +31,7 @@ npm start
 npm run dist:win
 ```
 
-O executável portátil sai em `dist/`. Requer Windows 10/11 64-bit.
+O pacote Windows sai em `dist/`. Extraia o ZIP inteiro e abra `VRLink Browser.exe`; não mova somente o executável, pois ele usa os arquivos da pasta `resources/`. Requer Windows 10/11 64-bit.
 
 ## Arquitetura
 
